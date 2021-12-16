@@ -6,6 +6,9 @@
 #Install basics
 apt install sudo tmux htop git bmon avahi-daemon iptables fail2ban #build-essential
 
+#Create user and set default shell
+useradd -s /bin/bash -m paul && passwd paul
+
 #Add paul to sudoers
 usermod -a -G sudo paul
 
