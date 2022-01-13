@@ -17,4 +17,4 @@ My initial setup script for fresh Debian installs. Get all the annoying basics o
 - Create initial user and set password
 - Add user to sudeoers file
 - Add .bashrc aliases for ll/la commands
-
+- Enable color prompts
