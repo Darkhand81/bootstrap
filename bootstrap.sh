@@ -88,7 +88,7 @@ fi
 # apt-utils
 if [ $(dpkg-query -W -f='${Status}' apt-utils 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
   echo "Installing apt-utils before continuing..."
-  apt-get install whiptail -y > /dev/null;
+  apt-get install apt-utils -y > /dev/null;
 fi
 
 # whiptail
