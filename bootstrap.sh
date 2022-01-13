@@ -84,10 +84,17 @@ if [[ $EUID -ne 0 ]]; then
     exit 2
 fi
 
-# Ensure whiptail is installed, and install it if not
+# Ensure prerequisites are installed, and install them if not
+# apt-utils
+if [ $(dpkg-query -W -f='${Status}' apt-utils 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+  echo "Installing apt-utils before continuing..."
+  apt-get install whiptail -y > /dev/null;
+fi
+
+# whiptail
 if [ $(dpkg-query -W -f='${Status}' whiptail 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
   echo "Installing whiptail before continuing..."
-  apt-get install whiptail -y;
+  apt-get install whiptail -y > /dev/null;
 fi
 
 # Update package list
