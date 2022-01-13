@@ -1,8 +1,9 @@
 #!/bin/bash
 
-# -------------------------------------------------
+# ---------------------------------------------------------
 # Darkhand's bootstrap script for prepping a fresh install.
-# -------------------------------------------------
+# Version 01-13-22
+# ---------------------------------------------------------
 
 # Add/remove the base packages you wish to install here:
 
@@ -18,9 +19,9 @@ iptables \
 fail2ban\
 
 "
-# -------------------------------------------------
+# ----------
 # Functions
-# -------------------------------------------------
+# ----------
 
 # Get username to create and setup
 function getUsername() {
