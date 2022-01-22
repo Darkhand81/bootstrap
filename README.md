@@ -12,6 +12,8 @@ My initial setup script for fresh Debian installs. Get all the annoying basics o
   - bmon
   - avahi-daemon
   - iptables
+  - rsync
+  - pv
   - fail2ban
 - Optionally install build-essential
 - Create initial user and set password
