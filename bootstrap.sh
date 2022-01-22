@@ -16,6 +16,8 @@ git \
 bmon \
 avahi-daemon \
 iptables \
+rsync \
+pv \
 fail2ban\
 
 "
