@@ -64,7 +64,8 @@ function getPassword() {
 
 function configureUser() {
   # Create user and set default shell
-  useradd -s /bin/bash -m $NAME && passwd $PASSWORD1
+  useradd -s /bin/bash -m $NAME
+  echo $NAME:$PASSWORD1 | chpasswd
 
   # Add user to sudoers
   usermod -a -G sudo $NAME
