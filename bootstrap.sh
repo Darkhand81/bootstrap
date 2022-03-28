@@ -125,6 +125,12 @@ getUsername
 # Set root shell to bash
 chsh -s /bin/bash
 
+# Optionally change timezone
+if whiptail --yesno --defaultno "Timezone is currently $(cat /etc/timezone). Change?" 0 0 ;then
+  dpkg-reconfigure tzdata
+  whiptail --title "Complete" --msgbox "Timezone updated!" 0 0
+fi
+
 # Optionally install build-essential
 if whiptail --yesno --defaultno "Install build-essential?" 0 0 ;then
   {
