@@ -18,6 +18,7 @@ My initial setup script for fresh Debian installs. Get all the annoying basics o
 - Optionally install build-essential
 - Optionally set timezone
 - Create initial user and set password
-- Add user to sudeoers file
+- Add user to sudoers file
+- Add user to sudoers.d to require no password with sudo commands
 - Add .bashrc aliases for ll/la commands
 - Enable color prompts
