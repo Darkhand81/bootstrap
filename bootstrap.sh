@@ -69,6 +69,9 @@ function configureUser() {
 
   # Add user to sudoers
   usermod -a -G sudo $NAME
+  
+  #Require no password for sudo commands
+  echo "$NAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/sudoer_$NAME
 
   # .bashrc additions
   echo "alias ll='ls -lh'" >> /home/$NAME/.bashrc
