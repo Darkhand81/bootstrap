@@ -71,6 +71,7 @@ function configureUser() {
       echo $NAME:$PASSWORD1 | chpasswd
     else
     # User already exists, do nothing"
+    true
   fi
 
   # Add user to sudoers
