@@ -63,9 +63,15 @@ function getPassword() {
 }
 
 function configureUser() {
-  # Create user and set default shell
-  useradd -s /bin/bash -m $NAME
-  echo $NAME:$PASSWORD1 | chpasswd
+  # Create user (if they don't already exist) and set default shell
+  if ! id "$NAME" >/dev/null 2>&1
+    then
+      # User does not exist, create them
+      useradd -s /bin/bash -m $NAME
+      echo $NAME:$PASSWORD1 | chpasswd
+    else
+    # User already exists, do nothing"
+  fi
 
   # Add user to sudoers
   usermod -a -G sudo $NAME
