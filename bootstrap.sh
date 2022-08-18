@@ -33,8 +33,13 @@ function getUsername() {
       if [ "$exitstatus" = 0 ]; then
         # Check if user already exists
         if id "$NAME" &>/dev/null; then
-          whiptail --title Error --ok-button Retry --msgbox "User already exists!" 0 0
-          getUsername
+          #whiptail --title Error --ok-button Retry --msgbox "User already exists!" 0 0
+          #getUsername
+          if whiptail --yesno --defaultyes "User already exists. Continue setting up user $NAME?" 0 0 ;then
+            configureUser
+          else
+            getUsername
+          fi
         else
           # User not found, ok to create user and set a password
           getPassword
