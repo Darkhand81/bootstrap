@@ -35,7 +35,7 @@ function getUsername() {
         if id "$NAME" &>/dev/null; then
           #whiptail --title Error --ok-button Retry --msgbox "User already exists!" 0 0
           #getUsername
-          if whiptail --yesno --defaultyes "User already exists. Continue setting up user $NAME?" 0 0 ;then
+          if whiptail --yesno "User already exists. Continue setting up user $NAME?" 0 0 ;then
             configureUser
           else
             getUsername
@@ -74,6 +74,7 @@ function configureUser() {
       # User does not exist, create them
       useradd -s /bin/bash -m $NAME
       echo $NAME:$PASSWORD1 | chpasswd
+      createdUser=1
     else
     # User already exists, do nothing"
     true
@@ -90,7 +91,6 @@ function configureUser() {
   echo "alias la='ls -alh'" >> /home/$NAME/.bashrc
   echo "alias ll='ls -lh'" >> /home/$NAME/.bashrc
   echo "force_color_prompt=yes" >> /home/$NAME/.bashrc
-  createdUser=1
 }
 
 # -------------------------------------------------
@@ -176,3 +176,4 @@ else
 fi
 
 echo "Setup complete, enjoy!"
+
