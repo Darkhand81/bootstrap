@@ -174,6 +174,48 @@ if whiptail --yesno --defaultno "Install build-essential?" 0 0 ;then
   whiptail --title "Complete" --msgbox "build-essential packages installed!" 0 0
 fi
 
+# Optionally install SteamCmd
+if whiptail --yesno --defaultno "Install SteamCmd?" 0 0 ;then
+  echo "Installing SteamCmd..."
+
+  # Add i386 architecture
+  dpkg --add-architecture i386
+
+  # Backup the sources.list file
+  cp /etc/apt/sources.list /etc/apt/sources.list.backup
+
+  # Add 'non-free' to each repository entry
+  sed -i 's/\(deb\|deb-src\) \([^ ]* [^ ]*\)/\1 \2 non-free/g' /etc/apt/sources.list
+
+  # Create a configuration file to suppress non-free firmware warnings
+  echo 'APT::Get::Update::SourceListWarnings::NonFreeFirmware "false";' > /etc/apt/apt.conf.d/no-nonfree-warnings.conf
+
+  # Update package list with progress bar
+  {
+    i=1
+    while read -r line; do
+      i=$(( i + 10 ))  # Increment progress
+      echo $i
+    done < <(apt-get update)
+  } | whiptail --title "Progress" --gauge "Updating package list..." 6 60 0
+
+  # Pre-accept Steamcmd license and EULA:
+  echo steam steam/license note '' | sudo debconf-set-selections
+  echo steam steam/purge note '' | sudo debconf-set-selections
+  echo steam steam/question select "I AGREE" | sudo debconf-set-selections
+
+  # Install Steamcmd package
+  {
+    i=1
+    while read -r line; do
+      i=$(( i + 10 ))  # Increment progress
+      echo $i
+    done < <(apt-get install steamcmd -y)
+  } | whiptail --title "Progress" --gauge "Installing SteamCmd..." 6 60 0
+
+  whiptail --title "Complete" --msgbox "SteamCmd installed!" 0 0
+fi
+
 # Install basic packages
 {
   i=1
