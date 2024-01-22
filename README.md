@@ -17,6 +17,7 @@ My initial setup script for fresh Debian installs. Get all the annoying basics o
   - fail2ban
 - Optionally install build-essential
 - Optionally set timezone
+- Optionally install steamcmd
 - Create initial user and set password
 - Add user to sudoers file
 - Add user to sudoers.d to require no password with sudo commands
