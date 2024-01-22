@@ -2,7 +2,7 @@
 
 # ---------------------------------------------------------
 # Darkhand's bootstrap script for prepping a fresh install.
-# Version 01-21-24
+# Version 01-22-24
 # ---------------------------------------------------------
 
 # Add/remove the base packages you wish to install here:
@@ -219,6 +219,16 @@ if whiptail --yesno --defaultno "Install SteamCmd?" 0 0 ;then
   whiptail --title "Complete" --msgbox "SteamCmd installed!" 0 0
 fi
 
+# Install decompress script and set executable
+wget -O /usr/local/bin/decompress https://raw.githubusercontent.com/Darkhand81/decompress/main/decompress.sh > /dev/null 2>&1
+
+# Check if script download succeeded
+if [ $? -eq 0 ]; then
+    chmod +x /usr/local/bin/decompress
+else
+    whiptail --title "Error" --msgbox "Decompress script download failed! Continuing." 0 0
+fi
+
 # Install basic packages
 {
   i=1
@@ -231,9 +241,9 @@ fi
 
 #Print exit message depending on what we did, based on the value of $createdUser
 if [ "$createdUser" -eq 1 ]; then
-  whiptail --title "Done!" --msgbox "Setup complete!\n\n - Updated package list\n - Upgraded all packages\n - Set root shell to bash\n - User $NAME created\n - Added $NAME to sudoers file\n - Added ll/la aliases\n - Installed packages: $PACKAGES" 0 0
+  whiptail --title "Done!" --msgbox "Setup complete!\n\n - Updated package list\n - Upgraded all packages\n - Set root shell to bash\n - User $NAME created\n - Added $NAME to sudoers file\n - Added ll/la aliases\n - Installed decompress script\n - Installed packages: $PACKAGES" 0 0
 else
-  whiptail --title "Done!" --msgbox "Setup complete!\n\n - Updated package list\n - Upgraded all packages\n - Set root shell to bash\n - Installed packages: $PACKAGES" 0 0
+  whiptail --title "Done!" --msgbox "Setup complete!\n\n - Updated package list\n - Upgraded all packages\n - Set root shell to bash\n - Installed decompress script\n - Installed packages: $PACKAGES" 0 0
 fi
 
 echo "Setup complete, enjoy!"
