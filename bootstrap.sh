@@ -2,7 +2,7 @@
 
 # ---------------------------------------------------------
 # Darkhand's bootstrap script for prepping a fresh install.
-# Version 01-13-22
+# Version 01-21-24
 # ---------------------------------------------------------
 
 # Add/remove the base packages you wish to install here:
@@ -67,6 +67,22 @@ function getPassword() {
     fi
 }
 
+# A helper function to uncomment a config file line or add it if it doesn't exist (used for .bashrc additions)
+function addOrUncommentLine() {
+  local pattern="$1"
+  local newLine="$2"
+  local file="$3"
+
+  # Check if the line exists in any form (commented or uncommented)
+  if grep -qE "$pattern" "$file"; then
+    # Line exists, replace it with the new line
+    sed -i "/$pattern/c\\$newLine" "$file"
+  else
+    # Line does not exist, add the new line
+    echo "$newLine" >> "$file"
+  fi
+}
+
 function configureUser() {
   # Create user (if they don't already exist) and set default shell
   if ! id "$NAME" >/dev/null 2>&1
@@ -87,10 +103,10 @@ function configureUser() {
   echo "$NAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/sudoer_$NAME
 
   # .bashrc additions
-  echo "alias ll='ls -lh'" >> /home/$NAME/.bashrc
-  echo "alias la='ls -alh'" >> /home/$NAME/.bashrc
-  echo "alias ll='ls -lh'" >> /home/$NAME/.bashrc
-  echo "force_color_prompt=yes" >> /home/$NAME/.bashrc
+  BASHRC_FILE="/home/$NAME/.bashrc"
+  addOrUncommentLine "alias ll=" "alias ll='ls -lh'" "$BASHRC_FILE"
+  addOrUncommentLine "alias la=" "alias la='ls -alh'" "$BASHRC_FILE"
+  addOrUncommentLine "force_color_prompt=" "force_color_prompt=yes" "$BASHRC_FILE"
 }
 
 # -------------------------------------------------
