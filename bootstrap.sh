@@ -107,6 +107,9 @@ function configureUser() {
   addOrUncommentLine "alias ll=" "alias ll='ls -lh'" "$BASHRC_FILE"
   addOrUncommentLine "alias la=" "alias la='ls -alh'" "$BASHRC_FILE"
   addOrUncommentLine "force_color_prompt=" "force_color_prompt=yes" "$BASHRC_FILE"
+
+  # Copy the modified .bashrc to /root/.bashrc, since we want these modifications when logged in as root as well
+  cp "$BASHRC_FILE" /root/.bashrc
 }
 
 # -------------------------------------------------
