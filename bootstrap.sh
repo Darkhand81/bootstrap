@@ -236,12 +236,35 @@ fi
       done < <(apt-get install $PACKAGES -y 2>&1 | grep -vi "extracting templates from packages") # The grep is a workaround to exclude an errant line that appears in the progress bar during installation
 } | whiptail --title "Progress" --gauge "Installing basic packages..." 6 60 0
 
+# Change GRUB timeout at boot to 1 second if not already set
+if ! grep -q "GRUB_TIMEOUT=1" /etc/default/grub; then
+    {
+        i=1
+        while read -r line; do
+          i=$(( i + 10 ))  # Increment progress
+          echo $i
+        done < <(sed -i 's/GRUB_TIMEOUT=[0-9]*/GRUB_TIMEOUT=1/' /etc/default/grub 2>&1; update-grub 2>&1)
+      } | whiptail --title "Progress" --gauge "Updating GRUB timeout" 6 60 0
+fi
+
+# Configure SSH to allow root login only from local network if not already set
+if ! grep -q "Match Address 192.168.1.0/24" /etc/ssh/sshd_config; then
+    {
+        echo ""
+        echo "# Allow root login only from local network"
+        echo "Match Address 192.168.1.0/24"
+        echo "    PermitRootLogin yes"
+    } >> /etc/ssh/sshd_config
+
+    # Restart SSH service to apply changes
+    systemctl restart ssh
+fi
 
 #Print exit message depending on what we did, based on the value of $createdUser
 if [ "$createdUser" -eq 1 ]; then
-  whiptail --title "Done!" --msgbox "Setup complete!\n\n - Updated package list\n - Upgraded all packages\n - Set root shell to bash\n - User $NAME created\n - Added $NAME to sudoers file\n - Added ll/la aliases\n - Installed decompress script\n - Installed packages: $PACKAGES" 0 0
+  whiptail --title "Done!" --msgbox "Setup complete!\n\n - Updated package list\n - Upgraded all packages\n - Set root shell to bash\n - User $NAME created\n - Added $NAME to sudoers file\n - Added ll/la aliases\n - Installed decompress script\n - Updated GRUB timeout\n - Allowed root login from local network\n - Installed packages: $PACKAGES" 0 0
 else
-  whiptail --title "Done!" --msgbox "Setup complete!\n\n - Updated package list\n - Upgraded all packages\n - Set root shell to bash\n - Installed decompress script\n - Installed packages: $PACKAGES" 0 0
+  whiptail --title "Done!" --msgbox "Setup complete!\n\n - Updated package list\n - Upgraded all packages\n - Set root shell to bash\n - Installed decompress script\n - Updated GRUB timeout\n - Allowed root login from local network\n - Installed packages: $PACKAGES" 0 0
 fi
 
 echo "Setup complete, enjoy!"
