@@ -2,7 +2,7 @@
 
 # ---------------------------------------------------------
 # Darkhand's bootstrap script for prepping a fresh install.
-# Version 01-22-24
+# Version 01-24-24
 # ---------------------------------------------------------
 
 # Add/remove the base packages you wish to install here:
@@ -197,26 +197,24 @@ if whiptail --yesno --defaultno "Install SteamCmd?" 0 0 ;then
   {
     i=1
     while read -r line; do
-      i=$(( i + 10 ))  # Increment progress
+      i=$(( i + 1 ))  # Increment progress
       echo $i
     done < <(apt-get update)
   } | whiptail --title "Progress" --gauge "Updating package list..." 6 60 0
 
   # Pre-accept Steamcmd license and EULA:
-  echo steam steam/license note '' | sudo debconf-set-selections
-  echo steam steam/purge note '' | sudo debconf-set-selections
-  echo steam steam/question select "I AGREE" | sudo debconf-set-selections
+  echo steam steam/license note '' | debconf-set-selections
+  echo steam steam/purge note '' | debconf-set-selections
+  echo steam steam/question select "I AGREE" | debconf-set-selections
 
   # Install Steamcmd package
   {
     i=1
     while read -r line; do
-      i=$(( i + 10 ))  # Increment progress
+      i=$(( i + 1 ))  # Increment progress
       echo $i
     done < <(apt-get install steamcmd -y)
   } | whiptail --title "Progress" --gauge "Installing SteamCmd..." 6 60 0
-
-  whiptail --title "Complete" --msgbox "SteamCmd installed!" 0 0
 fi
 
 # Install decompress script and set executable
@@ -235,7 +233,7 @@ fi
     while read -r line; do
       i=$(( i + 1 ))
       echo $i
-      done < <(apt-get install $PACKAGES -y)
+      done < <(apt-get install $PACKAGES -y 2>&1 | grep -vi "extracting templates from packages") # The grep is a workaround to exclude an errant line that appears in the progress bar during installation
 } | whiptail --title "Progress" --gauge "Installing basic packages..." 6 60 0
 
 
