@@ -260,6 +260,12 @@ if ! grep -q "Match Address 192.168.1.0/24" /etc/ssh/sshd_config; then
     systemctl restart ssh
 fi
 
+# If we're running on WSL, allow ping without superuser priviliges
+# (/proc/sys/fs/binfmt_misc/WSLInterop normally only exists when running on WSL)
+if [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]]; then
+    setcap cap_net_raw+ep /bin/ping
+fi
+
 #Print exit message depending on what we did, based on the value of $createdUser
 if [ "$createdUser" -eq 1 ]; then
   whiptail --title "Done!" --msgbox "Setup complete!\n\n - Updated package list\n - Upgraded all packages\n - Set root shell to bash\n - User $NAME created\n - Added $NAME to sudoers file\n - Added ll/la aliases\n - Installed decompress script\n - Updated GRUB timeout\n - Allowed root login from local network\n - Installed packages: $PACKAGES" 0 0
