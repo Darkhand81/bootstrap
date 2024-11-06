@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------
 
 # Give your session a name:
-SESSIONNAME="myserver"
+SESSIONNAME="$(hostname)"
 
 # Internet interface:
 INTERFACE="ens18"
