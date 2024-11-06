@@ -8,8 +8,17 @@
 # Give your session a name:
 SESSIONNAME="$(hostname)"
 
-# Internet interface:
-INTERFACE="ens18"
+# Function to find the first active network interface
+get_active_interface() {
+  # List all network interfaces that are up, exclude loopback, and select the first one
+  ip -o link show up | \
+    awk -F': ' '{print $2}' | \
+    grep -v '^lo$' | \
+    head -n1
+}
+
+# Get the first active interface for bmon
+INTERFACE=$(get_active_interface)
 
 function has-session {
   tmux has-session -t $SESSIONNAME 2>/dev/null
