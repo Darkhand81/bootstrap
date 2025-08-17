@@ -10,6 +10,7 @@
 PACKAGES="\
 
 sudo \
+rsyslog \
 tmux \
 htop \
 git \
