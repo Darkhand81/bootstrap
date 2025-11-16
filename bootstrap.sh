@@ -13,6 +13,7 @@ sudo \
 rsyslog \
 tmux \
 htop \
+curl \
 git \
 bmon \
 iptables \
