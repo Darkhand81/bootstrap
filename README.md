@@ -6,8 +6,11 @@ My initial setup script for fresh Debian installs. Get all the annoying basics o
 - Set root shell to bash
 - Install regularly used packages:
   - sudo
+  - rsyslog
+  - isc-dhcp-client
   - tmux
   - htop
+  - curl
   - git
   - bmon
   - iptables
