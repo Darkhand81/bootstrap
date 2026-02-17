@@ -11,6 +11,7 @@ PACKAGES="\
 
 sudo \
 rsyslog \
+isc-dhcp-client \
 tmux \
 htop \
 curl \
