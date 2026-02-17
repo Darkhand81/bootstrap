@@ -161,7 +161,11 @@ getUsername
 chsh -s /bin/bash
 
 # Optionally change timezone
-if whiptail --yesno --defaultno "Timezone is currently $(cat /etc/timezone). Change?" 0 0 ;then
+CURRENT_TZ=$(cat /etc/timezone 2>/dev/null)
+if [ -z "$CURRENT_TZ" ]; then
+  CURRENT_TZ=$(readlink /etc/localtime 2>/dev/null | sed 's|.*/zoneinfo/||')
+fi
+if whiptail --yesno --defaultno "Timezone is currently ${CURRENT_TZ:-unknown}. Change?" 0 0 ;then
   dpkg-reconfigure tzdata
   whiptail --title "Complete" --msgbox "Timezone updated!" 0 0
 fi
