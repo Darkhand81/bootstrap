@@ -45,10 +45,11 @@ APT_OPTS=(-y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confo
 # Functions
 # ----------
 
-# Run a command inside a whiptail progress gauge. Progress is estimated
-# from the command's output lines and capped at 99% until the command
-# finishes, so the bar can't overshoot. All output goes to $LOGFILE.
-# Usage: runWithGauge "Message..." command [args...]
+# Run a NON-apt command inside a whiptail progress gauge. Progress is
+# estimated from the command's output lines and capped at 99% until the
+# command finishes, so the bar can't overshoot. All output goes to
+# $LOGFILE. For apt commands prefer runAptWithGauge, which shows real
+# progress. Usage: runWithGauge "Message..." command [args...]
 # Returns the command's exit status.
 runWithGauge() {
   local message="$1" rcfile rc
@@ -61,6 +62,42 @@ runWithGauge() {
       [ "$i" -lt 99 ] && i=$(( i + 1 ))
       echo "$i"
     done < <("$@" 2>&1; echo "$?" > "$rcfile")
+    echo 100
+  } | whiptail --title "Progress" --gauge "$message" 6 60 0
+  rc=$(cat "$rcfile" 2>/dev/null || echo 1)
+  rm -f "$rcfile"
+  return "$rc"
+}
+
+# Run an apt-get command inside a whiptail progress gauge driven by real
+# progress from apt's machine-readable status stream (APT::Status-Fd),
+# rather than estimating from output lines. apt writes status lines of
+# the form "type:pkg:percent:description" to fd 3, which we translate
+# into the gauge's XXX protocol (percent + a live status line); apt's
+# normal output and errors still go to $LOGFILE. Note the bar reflects
+# apt's own percentage, so it resets once when moving from the download
+# phase to the install phase - that's two real phases, not an error.
+# Usage: runAptWithGauge "Message..." apt-get <subcommand> [args...]
+# Returns apt's exit status.
+runAptWithGauge() {
+  local message="$1" rcfile rc
+  shift
+  rcfile=$(mktemp)
+  {
+    # fd 3 -> the pipe (status stream); apt's stdout/stderr -> the log.
+    "$@" -o APT::Status-Fd=3 3>&1 1>>"$LOGFILE" 2>&1
+    echo "$?" > "$rcfile"
+  } | {
+    local kind pkg pct desc
+    while IFS=: read -r kind pkg pct desc; do
+      case "$kind" in
+        pmstatus|dlstatus)
+          pct="${pct%%.*}"                       # drop the .0000 fraction
+          case "$pct" in ''|*[!0-9]*) continue ;; esac  # numeric only
+          printf 'XXX\n%s\n%s\n%s\nXXX\n' "$pct" "$message" "$desc"
+          ;;
+      esac
+    done
     echo 100
   } | whiptail --title "Progress" --gauge "$message" 6 60 0
   rc=$(cat "$rcfile" 2>/dev/null || echo 1)
@@ -286,7 +323,7 @@ for pkg in apt-utils whiptail sudo; do
 done
 
 # Upgrade packages
-runWithGauge "Upgrading existing packages..." apt-get upgrade "${APT_OPTS[@]}" ||
+runAptWithGauge "Upgrading existing packages..." apt-get upgrade "${APT_OPTS[@]}" ||
   whiptail --title "Warning" --msgbox "Package upgrade reported errors. See $LOGFILE. Continuing." 0 0
 
 # Request username setup
@@ -307,7 +344,7 @@ fi
 
 # Optionally install build-essential
 if whiptail --yesno --defaultno "Install build-essential?" 0 0; then
-  if runWithGauge "Installing build-essential..." apt-get install "${APT_OPTS[@]}" build-essential; then
+  if runAptWithGauge "Installing build-essential..." apt-get install "${APT_OPTS[@]}" build-essential; then
     whiptail --title "Complete" --msgbox "build-essential packages installed!" 0 0
   else
     whiptail --title "Error" --msgbox "build-essential install failed! See $LOGFILE. Continuing." 0 0
@@ -325,19 +362,19 @@ if whiptail --yesno --defaultno "Install SteamCmd?" 0 0; then
   # Suppress non-free firmware warnings
   echo 'APT::Get::Update::SourceListWarnings::NonFreeFirmware "false";' > /etc/apt/apt.conf.d/no-nonfree-warnings.conf
 
-  runWithGauge "Updating package list..." apt-get update
+  runAptWithGauge "Updating package list..." apt-get update
 
   # Pre-accept Steamcmd license and EULA:
   echo steam steam/license note '' | debconf-set-selections
   echo steam steam/purge note '' | debconf-set-selections
   echo steam steam/question select "I AGREE" | debconf-set-selections
 
-  runWithGauge "Installing SteamCmd..." apt-get install "${APT_OPTS[@]}" steamcmd ||
+  runAptWithGauge "Installing SteamCmd..." apt-get install "${APT_OPTS[@]}" steamcmd ||
     whiptail --title "Error" --msgbox "SteamCmd install failed! See $LOGFILE. Continuing." 0 0
 fi
 
 # Install basic packages
-runWithGauge "Installing basic packages..." apt-get install "${APT_OPTS[@]}" "${PACKAGES[@]}" ||
+runAptWithGauge "Installing basic packages..." apt-get install "${APT_OPTS[@]}" "${PACKAGES[@]}" ||
   whiptail --title "Warning" --msgbox "Some packages failed to install. See $LOGFILE. Continuing." 0 0
 
 # Install decompress script and set executable (after the package
