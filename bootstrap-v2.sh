@@ -162,6 +162,21 @@ configureUser() {
   addOrUncommentLine "alias la=" "alias la='ls -alh'" "$bashrcFile"
   addOrUncommentLine "force_color_prompt=" "force_color_prompt=yes" "$bashrcFile"
 
+  # Add a clip() function to copy stdin to the local clipboard over SSH
+  # via the terminal's OSC 52 escape sequence. Guarded so re-runs don't
+  # append duplicate copies.
+  if ! grep -q '^clip()' "$bashrcFile"; then
+    cat >> "$bashrcFile" <<'EOF'
+
+# Function to copy stdin to the local clipboard via OSC 52
+clip() {
+    local pasteboard
+    pasteboard=$(base64 | tr -d '\r\n')
+    printf "\e]52;c;%s\a" "$pasteboard"
+}
+EOF
+  fi
+
   # Copy the modified .bashrc to /root/.bashrc, since we want these modifications when logged in as root as well
   cp "$bashrcFile" /root/.bashrc
 }
