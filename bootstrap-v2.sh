@@ -179,6 +179,15 @@ EOF
 
   # Copy the modified .bashrc to /root/.bashrc, since we want these modifications when logged in as root as well
   cp "$bashrcFile" /root/.bashrc
+
+  # Enable OSC 52 clipboard passthrough in tmux so clip() (and any app
+  # that sets the clipboard via OSC 52) reaches the local terminal
+  # instead of being swallowed by tmux. Idempotent. Mirrored to root.
+  local tmuxConf="/home/$NAME/.tmux.conf"
+  touch "$tmuxConf"
+  addOrUncommentLine "set-clipboard" "set -g set-clipboard on" "$tmuxConf"
+  chown "$NAME":"$NAME" "$tmuxConf"
+  cp "$tmuxConf" /root/.tmux.conf
 }
 
 # Enable the non-free component (needed for steamcmd), handling both the
