@@ -176,18 +176,27 @@ addOrUncommentLine() {
 }
 
 configureUser() {
+  configuredUser=1
+
   # Add user to the sudo group
   usermod -a -G sudo "$NAME"
 
   # Require no password for sudo commands. Written to a temp file and
   # validated first: a malformed sudoers.d file can lock sudo entirely.
-  local sudoersFile="/etc/sudoers.d/sudoer_$NAME" tmpSudoers
+  # sudo silently skips sudoers.d files whose names contain a '.' (or end
+  # in '~'), so dots in the username are replaced in the filename only.
+  local sudoersFile="/etc/sudoers.d/sudoer_${NAME//./_}" tmpSudoers
   tmpSudoers=$(mktemp)
   echo "$NAME ALL=(ALL) NOPASSWD: ALL" > "$tmpSudoers"
   chmod 0440 "$tmpSudoers"
   if visudo -cf "$tmpSudoers" >>"$LOGFILE" 2>&1; then
     cp "$tmpSudoers" "$sudoersFile"
     chmod 0440 "$sudoersFile"
+    sudoersInstalled=1
+    # Remove a dotted file left by older versions - sudo never read it.
+    if [ "$sudoersFile" != "/etc/sudoers.d/sudoer_$NAME" ]; then
+      rm -f "/etc/sudoers.d/sudoer_$NAME"
+    fi
   else
     whiptail --title "Error" --msgbox "Generated sudoers entry failed validation and was NOT installed. See $LOGFILE." 0 0
   fi
@@ -303,6 +312,8 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 createdUser=0
+configuredUser=0
+sudoersInstalled=0
 NAME=""
 
 echo "=== bootstrap run $(date) ===" >> "$LOGFILE"
@@ -403,11 +414,21 @@ if [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]] && command -v setcap >/dev/null 
     setcap cap_net_raw+ep /bin/ping
 fi
 
-# Print exit message depending on what we did, based on the value of $createdUser
-if [ "$createdUser" -eq 1 ]; then
-  USERLINES=" - User $NAME created\n - Added $NAME to sudoers file\n - Added ll/la aliases\n"
-else
-  USERLINES=""
+# Print exit message depending on what we did. User lines are shown
+# whenever a user was configured, including existing users (Continue).
+USERLINES=""
+if [ "$configuredUser" -eq 1 ]; then
+  if [ "$createdUser" -eq 1 ]; then
+    USERLINES+=" - User $NAME created\n"
+  else
+    USERLINES+=" - Configured existing user $NAME\n"
+  fi
+  if [ "$sudoersInstalled" -eq 1 ]; then
+    USERLINES+=" - Added $NAME to sudoers (passwordless)\n"
+  else
+    USERLINES+=" - Added $NAME to sudo group (passwordless sudo FAILED, see log)\n"
+  fi
+  USERLINES+=" - Added ll/la aliases\n"
 fi
 whiptail --title "Done!" --msgbox "Setup complete!\n\n - Updated package list\n - Upgraded all packages\n - Set root shell to bash\n$USERLINES - Installed decompress script\n - Updated GRUB timeout\n - Allowed root login from $SSH_ALLOWED_NET\n - Installed packages: ${PACKAGES[*]}" 0 0
 
