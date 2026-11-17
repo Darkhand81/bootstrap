@@ -8,8 +8,9 @@
 # Short hostname: tmux doesn't allow '.' in session names
 SESSIONNAME="$(hostname -s)"
 
-# First interface that is up, excluding loopback
-INTERFACE=$(ip -o link show up | awk -F': ' '$2 != "lo" {print $2; exit}')
+# First interface that is up, excluding loopback.
+# Strip any '@peer' suffix (e.g. veth0@if3 -> veth0) so bmon accepts it.
+INTERFACE=$(ip -o link show up | awk -F': ' '$2 != "lo" {sub(/@.*/, "", $2); print $2; exit}')
 
 # '=' forces an exact name match instead of a prefix match
 if tmux has-session -t "=$SESSIONNAME" 2>/dev/null; then
